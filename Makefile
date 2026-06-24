@@ -1,34 +1,48 @@
+# Nom de l'exécutable final
 NAME        = pendu
 
-CC          = gcc
-CFLAGS      = -Wall -Wextra -Werror
+# Compilateur et flags
+CC          = cc
+CFLAGS      = -Wall -Wextra -Werror -Iinc
 
+# Dossiers
+SRC_DIR     = srcs
+OBJ_DIR     = objs
 INC_DIR     = inc
 
-SRCS        = main.c srcs/pendu.c
+# Fichiers sources et objets
+# (On ajoute pendu.c qui doit contenir les fonctions du header)
+SRCS        = main.c $(SRC_DIR)/pendu.c $(SRC_DIR)/display.c
+OBJS        = $(SRCS:%.c=$(OBJ_DIR)/%.o)
 
-# Transformation des .c en .o (Fichiers Objets)
-OBJS        = $(SRCS:.c=.o)
+# Header pour la dépendance
+HEADERS     = $(INC_DIR)/pendu.h
 
+# Règle principale
 all: $(NAME)
 
-# Compilation de l'exécutable
+# Liaison des objets pour créer l'exécutable
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -I $(INC_DIR) $(OBJS) -o $(NAME)
-	@echo "✨ Exécutable '$(NAME)' créé avec succès !"
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	@echo "✨ Exécutable $(NAME) créé avec succès !"
 
-# Règle pour compiler les fichiers .c en .o
-%.o: %.c
-	$(CC) $(CFLAGS) -I $(INC_DIR) -c $< -o $@
+# Compilation des fichiers .c en .o
+$(OBJ_DIR)/%.o: %.c $(HEADERS)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
+# Nettoyage des fichiers objets
 clean:
-	rm -f $(OBJS)
-	@echo "🧹 Fichiers objets (.o) supprimés."
+	rm -rf $(OBJ_DIR)
+	@echo "🧹 Fichiers objets supprimés."
 
+# Nettoyage complet (objets + exécutable)
 fclean: clean
 	rm -f $(NAME)
-	@echo "🗑️  Exécutable '$(NAME)' supprimé."
+	@echo "🗑️  Exécutable $(NAME) supprimé."
 
+# Recompiler tout à zéro
 re: fclean all
 
+# Évite les conflits si des fichiers portent le même nom qu'une règle
 .PHONY: all clean fclean re
